@@ -1,14 +1,24 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+    }
     stages {
-        stage('Test') {
+        stage('Test and Build') {
             steps {
-                sh 'docker build -f Dockerfile.test -t toony1908/devopsfinaltests .'
+                sh 'docker build -f Dockerfile.build -t toony1908/devopsfinal .'
             }
         }
-        stage('Build') {
+        stage('Dockerhub login') {
             steps {
-                sh 'docker build -f Dockerfile -t toony1908/devopsfinal .'
+                script {
+                    sh 'echo ${DOCKER_HUB_CREDENTIALS_PSW} | docker login -u ${DOCKER_HUB_CREDENTIALS_USR} --password-stdin'
+                }
+            }
+        }
+        stage('Push') {
+            steps {
+                sh 'docker push toony1908/devopsfinal'
             }
         }
     }
